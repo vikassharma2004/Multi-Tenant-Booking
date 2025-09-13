@@ -1,9 +1,10 @@
 import mongoose from 'mongoose';
 import Redis from "ioredis";
-
+import dotenv from "dotenv"
+dotenv.config({path:"../../.env"})
 let redisClient;
-let Mongo_Url='mongodb+srv://vikas:WgrhqNeXhGjrNElr@cluster0.ns0yviu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
-let REDIS_URL="rediss://default:Afd5AAIncDE0ZDNmYmUxZjY5NDk0ZDAyOGZiNTI3YjdmMzQwYmM2NXAxNjMzNTM@ideal-koala-63353.upstash.io:6379"
+const Mongo_Url=process.env.MONGO_URI
+const REDIS_URL=process.env.REDIS_URL
 
 
 

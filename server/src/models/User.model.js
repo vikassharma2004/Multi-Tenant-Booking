@@ -1,33 +1,87 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+
 
 const UserSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  email: { type: String, required: true, unique: true, lowercase: true, index: true },
-  phone: { type: String, index: true },
-  username: { type: String, unique: true, sparse: true },
-  password: { type: String },
-  roles: { type: [String], default: ['user'] },
+
+
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    index: true
+  },
+  avatar: {
+    url: { type: String, default: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbi1fPLVLMrCsyYV1YbbtHw__IreCjAQBGsw&s" },
+    public_id: { type: String, default: "" }
+  }
+  ,
+
+  phone: {
+    type: String,
+    index: true
+  },
+
+  username: {
+    type: String,
+    unique: true,
+    sparse: true, // allows multiple docs without username
+    index: true
+  },
+
+  password: { type: String, required: true },
+
+  UserType: {
+    type: String,
+    enum: ['seller', 'customer', 'superadmin', 'adminstaff'],
+    default: 'customer',
+    index: true
+  },
+
   isPhoneVerified: { type: Boolean, default: false },
   isEmailVerified: { type: Boolean, default: false },
+
   twoFA: {
     enabled: { type: Boolean, default: false },
-    method: { type: String, enum: ['sms','authenticator','email'], default: 'sms' },
+    method: {
+      type: String,
+      enum: ['sms', 'authenticator', 'email'],
+      default: 'authenticator'
+    },
     secret: { type: String }
   },
-  sellerProfile: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller', index: true },
+
+  sellerProfile: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Seller',
+    index: true
+  },
+
   isDeleted: { type: Boolean, default: false, index: true },
+  isSuspended: { type: Boolean, default: false, index: true },
+
 }, { timestamps: true });
 
-UserSchema.pre('save', async function(next) {
+
+// For frequent queries like active sellers/customers
+UserSchema.index({ UserType: 1, isDeleted: 1 });
+
+// For fetching users by phone if not deleted
+UserSchema.index({ phone: 1, isDeleted: 1 });
+
+// For analytics and sorting by recent signups
+UserSchema.index({ createdAt: -1 });
+
+
+UserSchema.pre('save', async function (next) {
   if (!this.isModified('password') || !this.password) return next();
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   next();
 });
 
-UserSchema.methods.comparePassword = async function(candidate) {
+UserSchema.methods.comparePassword = async function (candidate) {
   if (!this.password) return false;
   return bcrypt.compare(candidate, this.password);
 };
