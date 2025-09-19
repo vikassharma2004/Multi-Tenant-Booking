@@ -18,11 +18,12 @@ export const isAuthenticated = async (req, res, next) => {
     }
 
     if (!token) {
-      return next(new AppError("Unauthorized: No token provided", 401));
+      return next(new AppError("unauthorized access", 401));
     }
 
     // 3️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log("accessdeconded",decoded)
 
     // 4️⃣ Fetch user from DB
     const user = await User.findById(decoded.id).select("-password");
@@ -40,5 +41,27 @@ export const isAuthenticated = async (req, res, next) => {
     next();
   } catch (err) {
     return next(new AppError("Unauthorized: Invalid or expired token", 401));
+  }
+};
+
+export const isLoggedIn = async (req, res, next) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) {
+      return next(new AppError("Not logged in", 401));
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+    console.log("refreshdecoded", decoded);
+    const user = await User.findById(decoded.id).select("-password");
+
+    if (!user) {
+      return next(new AppError("User not found", 401));
+    }
+
+    req.user = user;
+    next();
+  } catch (err) {
+    return next(new AppError("Invalid refresh token", 401));
   }
 };

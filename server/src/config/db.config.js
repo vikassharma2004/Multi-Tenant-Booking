@@ -2,15 +2,18 @@ import mongoose from 'mongoose';
 import Redis from "ioredis";
 import dotenv from "dotenv"
 dotenv.config({path:"../../.env"})
+
+
+
+
+
 let redisClient;
-const Mongo_Url=process.env.MONGO_URI
-const REDIS_URL=process.env.REDIS_URL
-
-
-
 export async function connectRedis() {
   try {
-    redisClient = new Redis(REDIS_URL);
+   
+      redisClient = new Redis(process.env.REDIS_URL, {
+      retryStrategy: (times) => Math.min(times * 50, 2000),
+    });
 
     redisClient.on("connect", () => {
       console.log("Redis connected successfully ✅");
@@ -41,10 +44,7 @@ export function getRedisClient() {
 
 export async function connectDB() {
   try {
-    await mongoose.connect(Mongo_Url, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    await mongoose.connect(process.env.MONGO_URI)
 
     console.log('MongoDB connected successfully ✅');
 

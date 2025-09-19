@@ -33,23 +33,14 @@ export const LoginController = catchAsyncError(async (req, res) => {
 export const GetProfileController = catchAsyncError(async (req, res) => {
     const { user } = await GetUserProfileService(req.user.id);
     res.status(200).json({
-        message: "User profile fetched", user: {
-            id: user._id,
-            avatar: { url: user.avatar?.url || "" },
-
-            email: user.email,
-            phone: user.phone,
-            username: user.username,
-            createdAt: user.createdAt,
-            updatedAt: user.updatedAt
-        }
+        message: "User profile fetched", user
     });
 });
 
 // ✉️ Send reset password link
 export const SendResetPasswordLinkController = catchAsyncError(async (req, res) => {
-    const { email } = req.body;
-    if (!email) {
+    const { email } = req.body || {};
+    if (!email || req.body=="undefined") {
         throw new AppError("Email is required", 400);
     }
     const { email: sendermail, resetLink } = await SendResetPasswordLinkService(email);
@@ -59,8 +50,8 @@ export const SendResetPasswordLinkController = catchAsyncError(async (req, res) 
 // 🔄 Reset password
 export const ResetPasswordController = catchAsyncError(async (req, res) => {
     const { token } = req.params;
-    const { password } = req.body;
-    if (!token || !password) {
+    const { password } = req.body || {};
+    if (!token || !password || req.body=="undefined") {
         throw new AppError("Token and password are required", 400);
     }
     const { message } = await ResetUserPasswordService(token, password);
@@ -70,6 +61,7 @@ export const ResetPasswordController = catchAsyncError(async (req, res) => {
 export const RefreshTokenController = catchAsyncError(async (req, res) => {
     const refreshtoekn=req.cookies.refreshToken
     const { accessToken } = await RefreshTokenService(refreshtoekn);
+    await setAuthCookies(res, accessToken, refreshtoekn);
     res.status(200).json({success:true})
 });
 export const LogoutController = catchAsyncError(async (req, res) => {

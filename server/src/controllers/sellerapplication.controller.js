@@ -50,11 +50,12 @@ export const GetAllApplicationController = catchAsyncError(async (req, res) => {
 
 export const UpdateApplicationController = catchAsyncError(async (req, res) => {
   const { id } = req.params;
-  const { status, rejectedReason } = req.body;
+  const { status, rejectedReason } = req.body || {};
   const adminId = req.user._id;
+  if(!status || req.body=="undefined") throw new AppError("Status is required", 400);
   if(status === "rejected" && !rejectedReason) throw new AppError("Rejected reason is required", 400);
 
   const application = await UpdateApplication(id, adminId, status, rejectedReason);
 
-  res.json({ message: "application update successfully", application });
+  res.json({ message:`application ${status} successfully`, application });
 });

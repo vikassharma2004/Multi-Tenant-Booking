@@ -1,14 +1,16 @@
 import mongoose from "mongoose";
-const PaymentSchema = new mongoose.Schema({
-booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking' },
-seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller' },
-user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-provider: { type: String, enum: ['razorpay','stripe','paytm','manual','other'], default: 'razorpay' },
-providerPaymentId: { type: String },
-amount: { type: Number, required: true },
-currency: { type: String, default: 'INR' },
-fees: { type: Number, default: 0 },
-taxes: { type: Number, default: 0 },
-status: { type: String, enum: ['initiated','success','failed','refunded'], default: 'initiated' },
+
+const PaymentTransactionSchema = new mongoose.Schema({
+  booking: { type: mongoose.Schema.Types.ObjectId, ref: 'Booking', required: true, index: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  seller: { type: mongoose.Schema.Types.ObjectId, ref: 'Seller' },
+  amount: { type: Number, required: true },
+  currency: { type: String, default: 'INR' },
+  paymentMethod: { type: String, enum: ['card','upi','wallet','netbanking','paypal'], required: true },
+  paymentGatewayId: { type: String }, // from payment provider
+  status: { type: String, enum: ['pending','paid','failed','refunded'], default: 'pending' },
+  refundedAmount: { type: Number, default: 0 },
+  metadata: { type: mongoose.Schema.Types.Mixed } // any extra info
 }, { timestamps: true });
-export const Payment = mongoose.model('Payment', PaymentSchema);
+
+export const PaymentTransaction = mongoose.model('PaymentTransaction', PaymentTransactionSchema);

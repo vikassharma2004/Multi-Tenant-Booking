@@ -1,7 +1,8 @@
 import jwt from "jsonwebtoken";
 import { AppError } from "../middleware/ErrorHandler.js";
-export const generateTokens = (id, role) => {
-    const payload = { id, role };
+export const generateTokens = (id, userType, role,permissions) => {
+    console.log("at generate tokens",id,userType,role,permissions)
+    const payload = { id,userType, role,permissions };
 
     const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
         expiresIn: "15m", // short-lived
@@ -20,7 +21,7 @@ export const refreshAccessToken = (refreshToken) => {
 
         // Generate new access token with same payload
         const newAccessToken = jwt.sign(
-            { id: decoded.id, role: decoded.role },
+            { id: decoded.id, userType: decoded.userType, role: decoded.role,permission:decoded.permissions },
             process.env.JWT_SECRET,
             { expiresIn: "15m" }
         );
