@@ -1,11 +1,12 @@
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
-dotenv.config();
+import { configDotenv } from "dotenv";
 
+configDotenv();
+console.log("process.env.SMTP_HOST",process.env.SMTP_HOST)
 export const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
   port: process.env.SMTP_PORT,
-  secure: process.env.SMTP_SECURE === "true", // true for 465, false for other ports
+  secure: process.env.SMTP_SECURE==="true", // true for 465, false for other ports
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS,
@@ -14,14 +15,21 @@ export const transporter = nodemailer.createTransport({
 
 export const sendEmail = async ({ to, subject, html, text }) => {
   try {
+    // ✅ validate 'to' is defined
+    if (!to) {
+      console.error("sendEmail called without 'to':", { to, subject });
+      throw new Error("No recipient defined");
+    }
+    console.log("Sending email to:", to, subject);
+
     const info = await transporter.sendMail({
-      from: `"YourApp Name" <${process.env.SMTP_USER}>`,
+      from: process.env.SMTP_FROM, // keep as plain string, no need for <>
       to,
       subject,
       html,
       text,
     });
-    console.log(`Email sent: ${info.messageId}`);
+
     return info;
   } catch (err) {
     console.error("Email send error:", err);

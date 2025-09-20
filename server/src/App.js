@@ -15,7 +15,7 @@ process.on('uncaughtException', (err) => console.error('Uncaught Exception:', er
 async function startServer() {
   try {
     await connectDB();      // Connect MongoDB first
-    // await connectRedis();   // Then Redis
+    await connectRedis();   // Then Redis
  const server = http.createServer(app);
 
     // Initialize Socket.IO

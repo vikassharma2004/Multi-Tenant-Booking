@@ -5,8 +5,7 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import SellerApplicationRouter from './routes/seller.route.js';
 import AuthRouter from './routes/user.route.js';
-import { errorHandler } from './middleware/ErrorHandler.js';import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
+import { errorHandler } from './middleware/ErrorHandler.js';
 
 
 
@@ -16,8 +15,6 @@ const app = express();
 // Middleware
 app.use(compression());
 app.use(express.json());
-app.use(mongoSanitize());
-app.use(xss());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(helmet());

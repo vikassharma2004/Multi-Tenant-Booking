@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 
 const OtpSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+   email: { type: String, required: true, index: true }, // changed from user
   otpHash: { type: String, required: true },
   purpose: { 
     type: String, 
-    enum: ["login", "register", "2fa", "password_reset", "phone_verification"], 
+    enum: ["login", "register", "2fa", "password_reset", "email_verification"], 
     required: true, 
     index: true 
   },
@@ -21,32 +21,33 @@ OtpSchema.index({ createdAt: 1 }, { expireAfterSeconds: 300 });
 OtpSchema.index({ user: 1, purpose: 1 }, { unique: true });
 
 // 🔹 Static method to generate OTP
-OtpSchema.statics.generateOtpFor = async function (userId, purpose) {
-  const otp = (Math.floor(100000 + Math.random() * 900000)).toString(); // 6-digit OTP
+// Generate OTP
+OtpSchema.statics.generateOtpFor = async function (email, purpose) {
+  const otp = (Math.floor(100000 + Math.random() * 900000)).toString();
   const hash = crypto.createHash("sha256").update(otp).digest("hex");
 
-  // Delete old OTP for same user-purpose before creating new
-  await this.findOneAndDelete({ user: userId, purpose });
+  // Delete old OTP for same email + purpose
+  await this.findOneAndDelete({ email, purpose });
 
-  await this.create({ user: userId, otpHash: hash, purpose });
-  return otp; // send via SMS/email
+  await this.create({ email, otpHash: hash, purpose });
+  return otp;
 };
-
 // 🔹 Static method to verify OTP
-OtpSchema.statics.verifyOtp = async function (userId, purpose, enteredOtp) {
-  const doc = await this.findOne({ user: userId, purpose });
+
+// Verify OTP
+OtpSchema.statics.verifyOtp = async function (email, purpose, enteredOtp) {
+  const doc = await this.findOne({ email, purpose });
   if (!doc) return false;
 
   const enteredHash = crypto.createHash("sha256").update(enteredOtp).digest("hex");
 
-  // Too many failed attempts? Lock it.
   if (doc.attempts >= 5) {
     await doc.deleteOne();
     return false;
   }
 
   if (doc.otpHash === enteredHash) {
-    await doc.deleteOne(); // OTP is single-use → burn it
+    await doc.deleteOne();
     return true;
   } else {
     doc.attempts += 1;
@@ -54,5 +55,4 @@ OtpSchema.statics.verifyOtp = async function (userId, purpose, enteredOtp) {
     return false;
   }
 };
-
 export const Otp = mongoose.model("Otp", OtpSchema);

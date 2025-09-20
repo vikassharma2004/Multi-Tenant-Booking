@@ -23,7 +23,6 @@ export const isAuthenticated = async (req, res, next) => {
 
     // 3️⃣ Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("accessdeconded",decoded)
 
     // 4️⃣ Fetch user from DB
     const user = await User.findById(decoded.id).select("-password");
@@ -52,7 +51,6 @@ export const isLoggedIn = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
-    console.log("refreshdecoded", decoded);
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {

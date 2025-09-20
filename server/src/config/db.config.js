@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 import Redis from "ioredis";
 import dotenv from "dotenv"
-dotenv.config({path:"../../.env"})
+dotenv.config()
 
 
 
-
+console.log("redisclient at congig",process.env.REDIS_URL)
 
 let redisClient;
 export async function connectRedis() {

@@ -7,16 +7,16 @@
 // utils/emailTemplates.js
 
 export const templates = {
-  otp: (otp, userName) => `
-    <div style="font-family: Arial, sans-serif; line-height:1.5">
-      <h2>Hello ${userName || "User"},</h2>
-      <p>Your One-Time Password (OTP) is:</p>
-      <h1 style="color: #007bff;">${otp}</h1>
-      <p>This OTP is valid for 5 minutes. Do not share it with anyone.</p>
-      <hr>
-      <p>If you did not request this, please ignore this email.</p>
-    </div>
-  `,
+ otp: (otp, userName, purpose) => `
+  <div style="font-family: Arial, sans-serif; line-height:1.5">
+    <h2>Hello ${userName || "User"},</h2>
+    <p>Your One-Time Password (OTP) for <strong>${purpose}</strong> is:</p>
+    <h1 style="color: #007bff;">${otp}</h1>
+    <p>This OTP is valid for 5 minutes. Do not share it with anyone.</p>
+    <hr>
+    <p>If you did not request this ${purpose}, please ignore this email.</p>
+  </div>
+`,
 
   sellerOnboardAccepted: (sellerName, dashboardLink) => `
     <div style="font-family: Arial, sans-serif; line-height:1.5">
