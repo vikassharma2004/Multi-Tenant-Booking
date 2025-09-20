@@ -36,16 +36,13 @@ const BookingSchema = new mongoose.Schema({
   totalPrice: { type: Number, required: true },
   currency: { type: String, default: 'INR' },
 
-  commissionPercentage: { type: Number, default: 10 },
-  commissionAmount: { type: Number, required: true },
-  payoutAmount: { type: Number, required: true },
-
   paymentStatus: { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
   status: { type: String, enum: ['booked', 'checked_in', 'checked_out', 'cancelled'], default: 'booked', index: true },
 
   refund: { type: RefundSchema }
 
 }, { timestamps: true });
+
 
 /* Validation: check-out must be after check-in */
 BookingSchema.pre('validate', function (next) {
